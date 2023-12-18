@@ -18,9 +18,9 @@ func (m *MockRepo) FindOne(ctx context.Context, id int64) (*User, error) {
 	return args.Get(0).(*User), args.Error(1)
 }
 
-func (m *MockRepo) FindMany(ctx context.Context, ids []int64) ([]*User, error) {
+func (m *MockRepo) FindMany(ctx context.Context, ids []int64) ([]User, error) {
 	args := m.Called(ctx, ids)
-	return args.Get(0).([]*User), args.Error(1)
+	return args.Get(0).([]User), args.Error(1)
 }
 
 func TestFindOneReturnsUserWhenKeyExistsInCache(t *testing.T) {
@@ -70,7 +70,7 @@ func TestFindManyReturnsUsersWhenKeysExistInCache(t *testing.T) {
 
 	assert.NoError(t, err)
 	for i, user := range users {
-		assert.Equal(t, user, *results[i])
+		assert.Equal(t, user, results[i])
 	}
 }
 
@@ -85,13 +85,13 @@ func TestFindManyReturnsUsersWhenKeysDoNotExistInCache(t *testing.T) {
 		{ID: 1, Name: "John Doe", Email: "john.doe@example.com"},
 		{ID: 2, Name: "Jane Doe", Email: "jane.doe@example.com"},
 	}
-	repo.On("FindMany", ctx, []int64{1, 2}).Return([]*User{&users[0], &users[1]}, nil)
+	repo.On("FindMany", ctx, []int64{1, 2}).Return([]User{users[0], users[1]}, nil)
 
 	results, err := cache.FindMany(ctx, []int64{1, 2})
 
 	assert.NoError(t, err)
 	for i, user := range users {
-		assert.Equal(t, user, *results[i])
+		assert.Equal(t, user, results[i])
 	}
 }
 
@@ -111,7 +111,7 @@ func TestFindManyReturnsUsersWhenAllKeysExistInCache(t *testing.T) {
 
 	assert.NoError(t, err)
 	for i, user := range users {
-		assert.Equal(t, user, *results[i])
+		assert.Equal(t, user, results[i])
 	}
 }
 
@@ -133,7 +133,7 @@ func TestFindManyReturnsUsersWhenSomeKeysExistInCache(t *testing.T) {
 
 	assert.NoError(t, err)
 	for i, user := range users {
-		assert.Equal(t, user, *results[i])
+		assert.Equal(t, user, results[i])
 	}
 }
 
@@ -148,12 +148,12 @@ func TestFindManyReturnsUsersWhenNoKeysExistInCache(t *testing.T) {
 		{ID: 1, Name: "John Doe", Email: "john.doe@example.com"},
 		{ID: 2, Name: "Jane Doe", Email: "jane.doe@example.com"},
 	}
-	repo.On("FindMany", ctx, []int64{1, 2}).Return([]*User{&users[0], &users[1]}, nil)
+	repo.On("FindMany", ctx, []int64{1, 2}).Return([]User{users[0], users[1]}, nil)
 
 	results, err := cache.FindMany(ctx, []int64{1, 2})
 
 	assert.NoError(t, err)
 	for i, user := range users {
-		assert.Equal(t, user, *results[i])
+		assert.Equal(t, user, results[i])
 	}
 }

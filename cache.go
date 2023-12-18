@@ -17,7 +17,7 @@ type cache[T any] interface {
 
 	// FindMany method takes a context and a slice of keys as parameters.
 	// It returns a slice of pointers to the found items of type T, a slice of keys that were not found, and an error if any occurred during the operation.
-	FindMany(ctx context.Context, keys []string) ([]*T, []string, error)
+	FindMany(ctx context.Context, keys []string) ([]T, []string, error)
 
 	// SetOne method takes a context, a genKey, and a pointer to an item of type T as parameters.
 	// It returns an error if any occurred during the operation.
@@ -25,7 +25,7 @@ type cache[T any] interface {
 
 	// SetMany method takes a context, a slice of keys, and a slice of pointers to items of type T as parameters.
 	// It returns an error if any occurred during the operation.
-	SetMany(ctx context.Context, keys []string, items []*T, expiration time.Duration) error
+	SetMany(ctx context.Context, keys []string, items []T, expiration time.Duration) error
 }
 
 var _ cache[any] = (*RedisCache[any])(nil)
@@ -58,13 +58,13 @@ func (rc *RedisCache[T]) FindOne(ctx context.Context, key string) (*T, bool, err
 	return &item, true, nil
 }
 
-func (rc *RedisCache[T]) FindMany(ctx context.Context, keys []string) ([]*T, []string, error) {
+func (rc *RedisCache[T]) FindMany(ctx context.Context, keys []string) ([]T, []string, error) {
 	values, err := rc.client.MGet(ctx, keys...).Result()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	var items []*T
+	var items []T
 	var notFoundKeys []string
 
 	for i, val := range values {
@@ -79,7 +79,7 @@ func (rc *RedisCache[T]) FindMany(ctx context.Context, keys []string) ([]*T, []s
 			return nil, nil, err
 		}
 
-		items = append(items, &item)
+		items = append(items, item)
 	}
 
 	return items, notFoundKeys, nil
@@ -99,11 +99,11 @@ func (rc *RedisCache[T]) SetOne(ctx context.Context, key string, item *T, expira
 	return nil
 }
 
-func (rc *RedisCache[T]) SetMany(ctx context.Context, keys []string, items []*T, expiration time.Duration) error {
+func (rc *RedisCache[T]) SetMany(ctx context.Context, keys []string, items []T, expiration time.Duration) error {
 	// cause MSET does not support expiration, so we have to use pipeline
 	pipe := rc.client.Pipeline()
 	for i, key := range keys {
-		data, err := json.Marshal(items[i])
+		data, err := json.Marshal(&items[i])
 		if err != nil {
 			return err
 		}

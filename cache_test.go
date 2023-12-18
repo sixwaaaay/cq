@@ -64,7 +64,7 @@ func TestFindManyReturnsUsersWhenKeysExist(t *testing.T) {
 	assert.Empty(t, notFoundKeys)
 	//assert.Equal(t, users, results)
 	for i, user := range users {
-		assert.Equal(t, user, *results[i])
+		assert.Equal(t, user, results[i])
 	}
 }
 
@@ -89,7 +89,7 @@ func TestSetManyStoresUsers(t *testing.T) {
 	cache := NewRedisCache[User](client)
 	ctx := context.Background()
 
-	users := []*User{
+	users := []User{
 		{ID: 1, Name: "John Doe", Email: "john.doe@example.com"},
 		{ID: 2, Name: "Jane Doe", Email: "jane.doe@example.com"},
 	}
@@ -104,6 +104,6 @@ func TestSetManyStoresUsers(t *testing.T) {
 	assert.NoError(t, err2)
 	//assert.Equal(t, users[0], result1)
 	//assert.Equal(t, users[1], result2)
-	assert.Equal(t, users[0], deserialize[User]([]byte(result1), t))
-	assert.Equal(t, users[1], deserialize[User]([]byte(result2), t))
+	assert.Equal(t, users[0], *deserialize[User]([]byte(result1), t))
+	assert.Equal(t, users[1], *deserialize[User]([]byte(result2), t))
 }

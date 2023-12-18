@@ -10,7 +10,7 @@ import (
 
 type Repo[T any] interface {
 	FindOne(ctx context.Context, key int64) (*T, error)
-	FindMany(ctx context.Context, keys []int64) ([]*T, error)
+	FindMany(ctx context.Context, keys []int64) ([]T, error)
 }
 
 type Cache[T any] struct {
@@ -70,7 +70,7 @@ func (c *Cache[T]) FindOne(ctx context.Context, id int64) (*T, error) {
 	return item, nil
 }
 
-func (c *Cache[T]) FindMany(ctx context.Context, ids []int64) ([]*T, error) {
+func (c *Cache[T]) FindMany(ctx context.Context, ids []int64) ([]T, error) {
 	keys := make([]string, len(ids))
 	for i, id := range ids {
 		keys[i] = genKey(c.Prefix, id)
@@ -98,7 +98,7 @@ func (c *Cache[T]) FindMany(ctx context.Context, ids []int64) ([]*T, error) {
 	}
 	var missingKeys []string
 	for _, item := range missingItems {
-		key := genKey(c.Prefix, c.Id(item))
+		key := genKey(c.Prefix, c.Id(&item))
 		missingKeys = append(missingKeys, key)
 	}
 	err = c.cache.SetMany(ctx, missingKeys, missingItems, c.expire)
