@@ -16,7 +16,7 @@ module github.com/sixwaaaay/cq
 go 1.20
 
 require (
-	github.com/redis/go-redis/v9 v9.3.0
+	github.com/redis/go-redis/v9 v9.3.1
 	github.com/stretchr/testify v1.8.4
 )
 
